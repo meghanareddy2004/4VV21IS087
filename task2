@@ -1,1 +1,126 @@
+productItem.js
 
+import React from 'react';
+
+    const ProductItem = ({ product }) => {
+        return (
+            <div className="product-item">
+                <h2>{product.name}</h2>
+                <p>{product.description}</p>
+                <p>Price: ${product.price}</p>
+            </div>
+        );
+    };
+
+    export default ProductItem;
+
+productlist.js
+
+import React, { useState, useEffect } from 'react';
+    import axios from 'axios';
+    import ProductItem from './ProductItem';
+
+    const ProductList = ({ topN }) => {
+        const [products, setProducts] = useState([]);
+
+        useEffect(() => {
+            const fetchProducts = async () => {
+                try {
+                    const response = await axios.get(`http://localhost:5000/products?topN=${topN}`);
+                    setProducts(response.data.products);
+                } catch (error) {
+                    console.error("Error fetching the products", error);
+                }
+            };
+
+            fetchProducts();
+        }, [topN]);
+
+        return (
+            <div className="product-list">
+                {products.map(product => (
+                    <ProductItem key={product.id} product={product} />
+                ))}
+            </div>
+        );
+    };
+
+    export default ProductList;
+
+app.js
+
+import React, { useState } from 'react';
+    import ProductList from './components/ProductList';
+    import './App.css';
+
+    const App = () => {
+        const [topN, setTopN] = useState(5);
+
+        const handleTopNChange = (event) => {
+            setTopN(event.target.value);
+        };
+
+        return (
+            <div className="App">
+                <h1>Top {topN} Products</h1>
+                <label>
+                    Number of Products to Display:
+                    <input 
+                        type="number" 
+                        value={topN} 
+                        onChange={handleTopNChange} 
+                        min="1"
+                    />
+                </label>
+                <ProductList topN={topN} />
+            </div>
+        );
+    };
+
+    export default App;
+
+app.css
+
+.App {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .product-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .product-item {
+        border: 1px solid #ddd;
+        margin: 10px;
+        padding: 10px;
+        width: 200px;
+    }
+
+python
+
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+# Mock data
+products = [
+    {"id": 1, "name": "Product 1", "description": "Description 1", "price": 10.0},
+    {"id": 2, "name": "Product 2", "description": "Description 2", "price": 20.0},
+    {"id": 3, "name": "Product 3", "description": "Description 3", "price": 30.0},
+    {"id": 4, "name": "Product 4", "description": "Description 4", "price": 40.0},
+    {"id": 5, "name": "Product 5", "description": "Description 5", "price": 50.0},
+    {"id": 6, "name": "Product 6", "description": "Description 6", "price": 60.0},
+    {"id": 7, "name": "Product 7", "description": "Description 7", "price": 70.0},
+    {"id": 8, "name": "Product 8", "description": "Description 8", "price": 80.0},
+]
+
+@app.route('/products', methods=['GET'])
+def get_products():
+    topN = int(request.args.get('topN', len(products)))
+    return jsonify({"products": products[:topN]})
+
+if __name__ == '__main__':
+    app.run(debug=True)
