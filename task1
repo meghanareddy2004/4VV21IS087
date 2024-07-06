@@ -1,1 +1,17 @@
+from flask import Flask, request, jsonify
 
+app = Flask(_name_)
+
+@app.route('/average', methods=['POST'])
+def calculate_average():
+    data = request.json
+    numbers = data.get('numbers')
+    
+    if not numbers or not all(isinstance(i, (int, float)) for i in numbers):
+        return jsonify({"error": "Invalid input. Please provide a list of numbers."}), 400
+    
+    average = sum(numbers) / len(numbers)
+    return jsonify({"average": average}), 200
+
+if _name_ == '_main_':
+    app.run(debug=True)
